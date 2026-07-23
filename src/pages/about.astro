@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactForm from '../components/ContactForm.astro';
+import DownloadResume from '../components/DownloadResume.astro';
 import { profile } from '../data/profile';
 
 const sectionTitle = (text: string) => text;
@@ -35,6 +36,10 @@ const email = emailContact?.href?.replace('mailto:', '') || 'contact@example.com
         }
       </ul>
     </header>
+
+    <div class="resume-download" data-reveal>
+      <DownloadResume variant="primary" label="下载简历 (PDF)" />
+    </div>
 
     <!-- 教育背景 -->
     <section class="resume-section" data-reveal>

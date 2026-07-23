@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import '../styles/visual.css';
+import '../styles/responsive.css';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 
@@ -47,6 +49,7 @@ const fullTitle = title === 'ResumeBlog' ? title : `${title} · ResumeBlog`;
     </button>
 
     <script>
+      import '../scripts/interactions.ts';
       // 滚动进度条 + 返回顶部按钮
       const progress = document.getElementById('scroll-progress');
       const backBtn = document.getElementById('back-to-top');

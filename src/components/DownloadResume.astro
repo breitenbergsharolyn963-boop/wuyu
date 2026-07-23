@@ -1,0 +1,62 @@
+---
+/**
+ * DownloadResume.astro — 轻量「简历下载」组件（纯前端，无后端）
+ *
+ * 用法（由主 Agent 决定插入位置）：
+ *   <DownloadResume />
+ *   <DownloadResume file="resume.pdf" label="下载简历 (PDF)" variant="primary" />
+ *
+ * 说明：
+ * - 复用全局 .btn / .btn-primary / .btn-ghost 样式，视觉与全站一致。
+ * - href 基于 import.meta.env.BASE_URL，兼容 GitHub Pages 子路径 /wuyu/。
+ * - `download` 属性指向 public/ 下的静态文件；若该文件不存在会 404，
+ *   仅需把真实 PDF 放到 public/resume.pdf 即可生效（不强制真文件存在）。
+ * - 若不想提供文件，可改为 mailto：把 href 换成 `mailto:...?subject=简历请求`。
+ */
+interface Props {
+  file?: string;
+  label?: string;
+  variant?: "primary" | "ghost";
+  className?: string;
+}
+
+const {
+  file = "resume.pdf",
+  label = "下载简历 (PDF)",
+  variant = "ghost",
+  className = "",
+} = Astro.props;
+
+const href = `${import.meta.env.BASE_URL}${file.replace(/^\//, "")}`;
+---
+
+<a
+  class:list={["download-resume", "btn", `btn-${variant}`, className]}
+  href={href}
+  download
+  aria-label={label}
+>
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="M7 10l5 5 5-5" />
+    <path d="M12 15V3" />
+  </svg>
+  <span>{label}</span>
+</a>
+
+<style>
+  .download-resume {
+    /* 复用全局 .btn，这里仅做轻量间距微调，避免文字换行 */
+    white-space: nowrap;
+  }
+</style>

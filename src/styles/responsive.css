@@ -1,0 +1,224 @@
+/* ============================================================
+   responsive.css — 响应式细化 & 性能优化（子任务产出）
+   ------------------------------------------------------------
+   集成说明（供主 Agent 串联）：
+   - 本文件为「全局覆盖表」，请在 BaseLayout.astro 中于
+     `import '../styles/global.css'` 之后追加
+     `import '../styles/responsive.css';`
+   - 针对各页面/组件 <style> 作用域(scoped)定义的类，需用
+     !important 才能覆盖；global.css 中定义的全局类按引入
+     顺序覆盖，无需 !important。
+   - 仅新增/细化规则，不修改任何现有文件。
+   ============================================================ */
+
+/* ---------- 0. 基础安全：杜绝横向溢出 & 媒体 CLS ---------- */
+html {
+  overflow-x: hidden;
+}
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+/* 标题更均衡的换行，减少孤行（渐进增强，老浏览器忽略） */
+h1,
+h2,
+h3,
+.section-heading,
+.hero-title,
+.stat-value {
+  text-wrap: balance;
+}
+
+/* ---------- 1. 平板（≤900px） ---------- */
+@media (max-width: 900px) {
+  /* 首页 Hero */
+  .hero-title {
+    font-size: 2.3rem !important;
+  }
+  .stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .post-list {
+    grid-template-columns: 1fr !important;
+  }
+  /* 项目轮播：每屏一张 */
+  .car-slide {
+    flex: 0 0 100% !important;
+  }
+  /* 关于页 */
+  .contacts {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* 弹性行内元素允许收缩，避免长文本撑破容器 */
+  .timeline-head,
+  .slide-head {
+    min-width: 0 !important;
+  }
+}
+
+/* ---------- 2. 手机（≤640px） ---------- */
+@media (max-width: 640px) {
+  /* 容器留白收紧（与 global.css 观感一致） */
+  .container {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  /* 首页 Hero：流式字号，避免小屏溢出 */
+  .hero-title {
+    font-size: clamp(1.5rem, 7vw + 0.4rem, 1.9rem) !important;
+    line-height: 1.2 !important;
+  }
+  .hero-sub {
+    font-size: 1rem !important;
+  }
+  .hero-cta {
+    width: 100% !important;
+  }
+  .hero-cta .btn {
+    flex: 1 1 auto !important;
+    justify-content: center !important;
+  }
+  .stat-value {
+    font-size: clamp(1.3rem, 5vw, 1.5rem) !important;
+  }
+
+  /* 导航：移动端菜单与更大的触控目标 */
+  .navbar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: var(--color-bg) !important;
+  }
+  .nav-toggle {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .theme-toggle {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .nav-links {
+    box-shadow: var(--shadow-md) !important;
+  }
+  .nav-link {
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 1rem !important;
+  }
+
+  /* 关于页 */
+  .resume-hero {
+    grid-template-columns: 1fr !important;
+    text-align: center !important;
+    justify-items: center !important;
+  }
+  .contacts {
+    grid-template-columns: 1fr !important;
+  }
+  .skills-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 表单行单列（组件内已处理，这里双保险） */
+  .form-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 项目轮播：箭头已隐藏，仅保留滑动/圆点 */
+  .carousel {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 页脚触控目标 */
+  .footer-links a {
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 0 var(--space-2) !important;
+  }
+
+  /* 通用标签链接的触控目标 */
+  .tag {
+    min-height: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  /* 返回顶部按钮保持在触控范围内 */
+  .back-to-top {
+    width: 44px !important;
+    height: 44px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+  }
+
+  /* ---------- 性能：移动端削减重绘/合成成本 ---------- */
+  /* 极光光斑：关闭动画并降低模糊半径，避免全屏高斯模糊在滚动时
+     持续重绘导致的移动端卡顿 */
+  .blob {
+    animation: none !important;
+    will-change: auto !important;
+    filter: blur(40px) !important;
+  }
+  /* 玻璃拟态在移动端改为实底，去掉昂贵的 backdrop-filter */
+  .glass,
+  .stat {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: var(--color-bg-elevated) !important;
+  }
+  /* 主按钮用轻阴影替代彩色辉光，减少 overdraw */
+  .btn-primary {
+    box-shadow: var(--shadow-md) !important;
+  }
+}
+
+/* ---------- 3. 超小屏（≤400px） ---------- */
+@media (max-width: 400px) {
+  .stats {
+    grid-template-columns: 1fr !important;
+  }
+  .hero-cta {
+    flex-direction: column !important;
+  }
+  .hero-cta .btn {
+    width: 100% !important;
+  }
+}
+
+/* ---------- 4. 减少动态效果（无障碍 & 省电） ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .blob {
+    animation: none !important;
+  }
+  .aurora {
+    animation: none !important;
+  }
+  html {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- 5. 纯触控设备微调 ---------- */
+@media (hover: none) {
+  /* 触屏无 hover：去掉 hover 位移特效，避免点按后“卡住”的位移 */
+  .btn:hover,
+  .btn-primary:hover,
+  .btn-ghost:hover,
+  .skill-chip:hover,
+  .post-card:hover,
+  .card-glow:hover,
+  .car-nav:hover {
+    transform: none !important;
+  }
+  .card-glow:hover::after {
+    opacity: 0 !important;
+  }
+}

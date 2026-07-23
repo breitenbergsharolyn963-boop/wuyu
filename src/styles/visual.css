@@ -1,0 +1,304 @@
+/* ============================================================
+   visual.css — 视觉冲击力升级层（子智能体产出）
+   ------------------------------------------------------------
+   策略：只增强、不覆盖。所有视觉令牌复用 global.css 既有变量，
+   新增令牌统一前缀 --vt-*，避免与其它层冲突。
+   仅通过伪元素 / 全局同特异性后加载规则做增强，
+   不改动任何 HTML 结构与组件逻辑。
+   ============================================================ */
+
+/* ---------- 新增令牌（全部基于现有变量派生） ---------- */
+:root {
+  --vt-blur: 80px;
+  --vt-drift: 26s;
+
+  /* 极光额外光斑（复用 --aurora-* 调色的透明版本） */
+  --vt-aura-1: color-mix(in srgb, var(--aurora-1) 70%, transparent);
+  --vt-aura-2: color-mix(in srgb, var(--aurora-2) 60%, transparent);
+  --vt-aura-3: color-mix(in srgb, var(--aurora-3) 55%, transparent);
+  --vt-aura-4: color-mix(in srgb, var(--aurora-4) 55%, transparent);
+
+  /* 细微网格 / 噪点纹理 */
+  --vt-grid-line: color-mix(in srgb, var(--color-border) 80%, transparent);
+  --vt-grid-size: 22px;
+  --vt-dot-size: 1px;
+  --vt-noise-opacity: 0.04;
+
+  /* 卡片高光描边（顶部高光 hairline） */
+  --vt-card-sheen: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 22%,
+    transparent 46%
+  );
+
+  /* 强调色高光（彩色辉光） */
+  --vt-highlight: color-mix(in srgb, var(--color-primary) 22%, transparent);
+  --vt-text-glow: 0 0 24px color-mix(in srgb, var(--color-primary) 32%, transparent);
+  --vt-bar-glow: 0 0 16px color-mix(in srgb, var(--color-primary) 55%, transparent);
+  --vt-ring: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 38%, transparent);
+}
+
+/* 深色模式下的纹理微调（仅调整透明度，不引入新色值） */
+.dark {
+  --vt-noise-opacity: 0.06;
+  --vt-grid-line: color-mix(in srgb, var(--color-border) 90%, transparent);
+}
+
+/* ============================================================
+   1. 全局氛围背景：固定极光 + 细微噪点
+   （用 body 的 ::before / ::after，z-index:-1 置于内容之下、底色之上）
+   ============================================================ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 50% at 10% 0%, var(--vt-aura-1), transparent 70%),
+    radial-gradient(46% 46% at 100% 6%, var(--vt-aura-3), transparent 70%),
+    radial-gradient(60% 60% at 50% 118%, var(--vt-aura-2), transparent 72%);
+  opacity: 0.85;
+  animation: vt-breathe 14s ease-in-out infinite;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--vt-noise-opacity);
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   2. Hero 极光：更丰富的层次 + 动态光斑 + 细点纹理
+   （.aurora 为作用域样式内的定位容器，这里只追加伪元素）
+   ============================================================ */
+.aurora::before {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(closest-side, var(--vt-aura-2), transparent 70%) 82% 18% / 42% 42% no-repeat,
+    radial-gradient(closest-side, var(--vt-aura-4), transparent 70%) 16% 82% / 38% 38% no-repeat,
+    radial-gradient(closest-side, var(--vt-aura-3), transparent 70%) 62% 64% / 30% 30% no-repeat;
+  filter: blur(var(--vt-blur));
+  opacity: 0.9;
+  animation: vt-auroraDrift var(--vt-drift) ease-in-out infinite;
+}
+.aurora::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    var(--vt-grid-line) var(--vt-dot-size),
+    transparent calc(var(--vt-dot-size) + 0.6px)
+  );
+  background-size: var(--vt-grid-size) var(--vt-grid-size);
+  -webkit-mask-image: radial-gradient(circle at 50% 35%, #000, transparent 76%);
+  mask-image: radial-gradient(circle at 50% 35%, #000, transparent 76%);
+  opacity: 0.35;
+}
+
+/* 顶部额外柔光，强化“光从上方洒下”的纵深感 */
+.hero::after {
+  content: "";
+  position: absolute;
+  top: -22%;
+  left: 50%;
+  width: 78%;
+  height: 62%;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, var(--vt-aura-1), transparent 70%);
+  filter: blur(90px);
+  z-index: -1;
+  pointer-events: none;
+  animation: vt-auroraDrift 32s ease-in-out infinite reverse;
+}
+
+/* ============================================================
+   3. 玻璃拟态 & 彩色辉光增强
+   ============================================================ */
+.glass {
+  box-shadow: var(--shadow-glow-soft);
+}
+
+/* 统计卡片：悬浮上浮 + 彩色辉光 */
+.stat {
+  transition: transform var(--transition-slow), box-shadow var(--transition-slow),
+    border-color var(--transition);
+}
+.stat:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow-soft);
+  border-color: color-mix(in srgb, var(--color-primary) 32%, var(--color-border));
+}
+
+/* ============================================================
+   4. 卡片：统一高光描边（::before）+ 非 glow 卡片悬浮增强
+   ============================================================ */
+.card {
+  box-shadow: var(--shadow-sm);
+}
+/* 顶部高光 hairline（::after 已被 .card-glow 用作渐变描边，故用 ::before） */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--vt-card-sheen);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.7;
+  pointer-events: none;
+}
+/* 没有渐变描边的卡片：补上悬浮辉光与彩色边框 */
+.card:not(.card-glow):hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-soft);
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+}
+
+/* 文章卡 / 轮播卡：顶部一抹主色微光（叠加在背景色之上） */
+.post-card {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary) 9%, transparent),
+    transparent 24%
+  );
+}
+.car-slide {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-secondary) 9%, transparent),
+    transparent 24%
+  );
+}
+
+/* ============================================================
+   5. 按钮：扫描高光 + 更强悬浮辉光
+   ============================================================ */
+.btn {
+  position: relative;
+}
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 32%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 68%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.6s var(--ease-spring);
+  pointer-events: none;
+}
+.btn-primary:hover::after {
+  transform: translateX(130%);
+}
+.btn-ghost:hover {
+  box-shadow: var(--shadow-glow-soft);
+}
+
+/* ============================================================
+   6. 渐变文字 & 章节标题：发光强调
+   ============================================================ */
+.gradient-text {
+  text-shadow: var(--vt-text-glow);
+}
+.section-heading::before {
+  box-shadow: var(--vt-bar-glow);
+}
+/* about 页 .section-title 为作用域样式（::before 已被占用），
+   这里用 drop-shadow 做整体发光，避免覆盖既有细条 */
+.section-title {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-primary) 24%, transparent));
+}
+.eyebrow {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent),
+    var(--shadow-glow-soft);
+}
+
+/* ============================================================
+   7. 标签 & 技能芯片：悬浮辉光 + 扫描高光
+   ============================================================ */
+.tag:hover {
+  box-shadow: var(--shadow-glow-soft);
+}
+.skill-chip {
+  position: relative;
+  overflow: hidden;
+}
+.skill-chip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 32%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 68%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.6s var(--ease-spring);
+  pointer-events: none;
+}
+.skill-chip:hover::after {
+  transform: translateX(130%);
+}
+
+/* ============================================================
+   8. 导航：当前项发光内描边
+   ============================================================ */
+.nav-link.active {
+  box-shadow: var(--vt-ring);
+}
+
+/* ============================================================
+   关键帧
+   ============================================================ */
+@keyframes vt-auroraDrift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(3%, -5%, 0) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-3%, 4%, 0) scale(0.96);
+  }
+}
+@keyframes vt-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* ============================================================
+   尊重 prefers-reduced-motion：停用本层所有动画
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  .aurora::before,
+  .hero::after,
+  .btn-primary::after,
+  .skill-chip::after {
+    animation: none !important;
+  }
+}
