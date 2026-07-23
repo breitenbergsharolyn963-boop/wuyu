@@ -1,0 +1,19 @@
+---
+interface Props {
+  tags: string[];
+  class?: string;
+}
+const { tags, class: className } = Astro.props;
+---
+
+{
+  tags.length > 0 && (
+    <div class:list={['tag-list', className]}>
+      {tags.map((tag) => (
+        <a class="tag" href={`${import.meta.env.BASE_URL}tags/${encodeURIComponent(tag)}`}>
+          #{tag}
+        </a>
+      ))}
+    </div>
+  )
+}

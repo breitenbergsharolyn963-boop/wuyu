@@ -1,0 +1,229 @@
+---
+import type { ProjectItem } from '../data/profile';
+
+interface Props {
+  projects: ProjectItem[];
+}
+const { projects } = Astro.props;
+---
+
+<div class="carousel" data-carousel>
+  <button class="car-nav car-prev" aria-label="上一个项目" data-prev>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+  </button>
+
+  <div class="car-track" data-track>
+    {
+      projects.map((p, i) => (
+        <article class="car-slide card card-glow" data-slide>
+          <div class="slide-index">{String(i + 1).padStart(2, '0')}</div>
+          <div class="slide-head">
+            <h3 class="slide-title">{p.name}</h3>
+            <span class="slide-period">{p.period}</span>
+          </div>
+          <p class="slide-role">{p.role}</p>
+          <p class="slide-desc">{p.description}</p>
+          <div class="tag-list slide-tags">
+            {p.tech.map((t) => (
+              <span class="tag">{t}</span>
+            ))}
+          </div>
+          {p.link && (
+            <a class="slide-link" href={p.link} target="_blank" rel="noopener">
+              查看详情 →
+            </a>
+          )}
+        </article>
+      ))
+    }
+  </div>
+
+  <button class="car-nav car-next" aria-label="下一个项目" data-next>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+  </button>
+
+  <div class="car-dots" data-dots>
+    {projects.map((_, i) => (
+      <button class="car-dot" aria-label={`跳转到第 ${i + 1} 个项目`} data-dot={i}></button>
+    ))}
+  </div>
+</div>
+
+<style>
+  .carousel {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .car-track {
+    display: flex;
+    gap: var(--space-4);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding: var(--space-2) var(--space-1) var(--space-4);
+    scrollbar-width: none;
+  }
+  .car-track::-webkit-scrollbar {
+    display: none;
+  }
+  .car-slide {
+    flex: 0 0 calc((100% - var(--space-4)) / 2);
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    min-height: 260px;
+  }
+  .slide-index {
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: var(--space-3);
+    opacity: 0.9;
+  }
+  .slide-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  .slide-title {
+    margin: 0;
+    font-size: 1.15rem;
+    line-height: 1.4;
+  }
+  .slide-period {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+  .slide-role {
+    margin: 6px 0 var(--space-3);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+  .slide-desc {
+    margin: 0 0 var(--space-4);
+    color: var(--color-text-soft);
+    font-size: 0.92rem;
+    flex: 1;
+  }
+  .slide-tags {
+    margin-top: auto;
+  }
+  .slide-link {
+    margin-top: var(--space-3);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .car-nav {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition);
+  }
+  .car-nav:hover {
+    color: #fff;
+    background: var(--gradient-primary);
+    border-color: transparent;
+    box-shadow: var(--shadow-glow-soft);
+  }
+  .car-nav:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .car-dots {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+  }
+  .car-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: var(--radius-full);
+    border: none;
+    background: var(--color-border);
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .car-dot.active {
+    width: 26px;
+    background: var(--gradient-primary);
+  }
+
+  @media (max-width: 900px) {
+    .car-slide {
+      flex: 0 0 100%;
+    }
+  }
+  @media (max-width: 640px) {
+    .car-nav {
+      display: none;
+    }
+    .carousel {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll('[data-carousel]').forEach((root) => {
+    const track = root.querySelector('[data-track]') as HTMLElement | null;
+    const prev = root.querySelector('[data-prev]') as HTMLButtonElement | null;
+    const next = root.querySelector('[data-next]') as HTMLButtonElement | null;
+    const dots = Array.from(root.querySelectorAll('[data-dot]')) as HTMLElement[];
+    const slides = Array.from(root.querySelectorAll('[data-slide]')) as HTMLElement[];
+    if (!track || slides.length === 0) return;
+
+    const slideStep = () => {
+      const style = getComputedStyle(track);
+      const gap = parseFloat(style.columnGap || style.gap || '16') || 16;
+      return slides[0].getBoundingClientRect().width + gap;
+    };
+
+    const update = () => {
+      const idx = Math.round(track.scrollLeft / slideStep());
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      if (prev) prev.disabled = track.scrollLeft < 4;
+      if (next)
+        next.disabled =
+          track.scrollLeft > track.scrollWidth - track.clientWidth - 4;
+    };
+
+    prev?.addEventListener('click', () =>
+      track.scrollBy({ left: -slideStep(), behavior: 'smooth' })
+    );
+    next?.addEventListener('click', () =>
+      track.scrollBy({ left: slideStep(), behavior: 'smooth' })
+    );
+    dots.forEach((d, i) =>
+      d.addEventListener('click', () =>
+        track.scrollTo({ left: slideStep() * i, behavior: 'smooth' })
+      )
+    );
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  });
+</script>

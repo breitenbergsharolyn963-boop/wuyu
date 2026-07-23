@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = await getCollection('posts');
+
+const counts = new Map<string, number>();
+for (const post of posts) {
+  for (const tag of post.data.tags) {
+    counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+}
+const tags = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+---
+
+<BaseLayout title="标签" description="按标签浏览全部文章">
+  <div class="container container-narrow">
+    <header class="tags-header">
+      <h1>标签</h1>
+      <p class="tags-sub">共 {tags.length} 个标签 · {posts.length} 篇文章</p>
+    </header>
+
+    <div class="tag-cloud">
+      {
+        tags.map(([tag, count]) => (
+          <a class="tag tag-cloud-item" href={`${import.meta.env.BASE_URL}tags/${encodeURIComponent(tag)}`}>
+            #{tag} <span class="tag-count">{count}</span>
+          </a>
+        ))
+      }
+    </div>
+
+    {
+      tags.length === 0 && <p class="empty">暂无标签。</p>
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .tags-header {
+    margin-bottom: var(--space-6);
+  }
+  .tags-header h1 {
+    margin: 0 0 var(--space-2);
+    font-size: 2rem;
+  }
+  .tags-sub {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .tag-cloud-item {
+    font-size: 0.95rem;
+    padding: 8px 16px;
+  }
+  .tag-count {
+    opacity: 0.7;
+    font-weight: 600;
+  }
+  .empty {
+    color: var(--color-text-muted);
+  }
+</style>

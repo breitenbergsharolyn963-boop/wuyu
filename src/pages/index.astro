@@ -1,0 +1,296 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import ProjectCarousel from '../components/ProjectCarousel.astro';
+import { profile } from '../data/profile';
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const latest = posts.slice(0, 4);
+---
+
+<BaseLayout title="ResumeBlog" description="吴宇 · 颗粒流仿真研究 —— 个人简历与阶段性研究记录">
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="aurora" aria-hidden="true">
+      <span class="blob blob-1"></span>
+      <span class="blob blob-2"></span>
+      <span class="blob blob-3"></span>
+      <span class="grid-overlay"></span>
+    </div>
+    <div class="container hero-inner">
+      <span class="eyebrow" data-reveal>颗粒流 · 离散元仿真</span>
+      <h1 class="hero-title" data-reveal style="--reveal-delay:.05s">
+        <span class="gradient-text">{profile.name}</span> · 颗粒流仿真研究
+      </h1>
+      <p class="hero-sub" data-reveal style="--reveal-delay:.12s">
+        {profile.tagline}
+      </p>
+      <div class="hero-cta" data-reveal style="--reveal-delay:.18s">
+        <a href={`${import.meta.env.BASE_URL}about`} class="btn btn-primary">查看完整简历</a>
+        <a href="#featured" class="btn btn-ghost">精选项目 ↓</a>
+      </div>
+
+      <div class="stats" data-reveal style="--reveal-delay:.24s">
+        {
+          profile.stats.map((s) => (
+            <div class="stat">
+              <div class="stat-value gradient-text">{s.value}</div>
+              <div class="stat-label">{s.label}</div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 核心能力 ===== -->
+  <section class="container block">
+    <h2 class="section-heading" data-reveal>核心能力</h2>
+    <div class="skill-cloud">
+      {
+        profile.coreSkills.map((s, i) => (
+          <span class="skill-chip" data-reveal style={`--reveal-delay:${i * 0.06}s`}>
+            {s.name}
+          </span>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ===== 精选项目轮播 ===== -->
+  <section class="container block" id="featured">
+    <div class="block-head" data-reveal>
+      <h2 class="section-heading">精选项目</h2>
+      <p class="block-sub">左右滑动或点击箭头浏览研究项目</p>
+    </div>
+    <div data-reveal style="--reveal-delay:.08s">
+      <ProjectCarousel projects={profile.projects} />
+    </div>
+  </section>
+
+  <!-- ===== 最新研究 ===== -->
+  <section class="container block">
+    <div class="block-head" data-reveal>
+      <h2 class="section-heading">最新研究记录</h2>
+      <a href={`${import.meta.env.BASE_URL}tags`} class="block-link">按标签浏览 →</a>
+    </div>
+    <div class="post-list">
+      {
+        latest.map((post, i) => (
+          <div data-reveal style={`--reveal-delay:${i * 0.08}s`}>
+            <PostCard post={post} />
+          </div>
+        ))
+      }
+    </div>
+    {
+      posts.length === 0 && (
+        <p class="empty">还没有阶段性研究记录，去 <code>src/content/posts</code> 添加第一篇吧。</p>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  /* ===== Hero ===== */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: var(--space-8) 0 var(--space-7);
+    margin-top: calc(-1 * var(--space-7));
+  }
+  .aurora {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    will-change: transform;
+  }
+  .blob-1 {
+    width: 460px;
+    height: 460px;
+    top: -140px;
+    left: -80px;
+    background: var(--aurora-1);
+    animation: auroraFloat 16s ease-in-out infinite;
+  }
+  .blob-2 {
+    width: 400px;
+    height: 400px;
+    top: -60px;
+    right: -60px;
+    background: var(--aurora-3);
+    animation: auroraFloat 20s ease-in-out infinite reverse;
+  }
+  .blob-3 {
+    width: 380px;
+    height: 380px;
+    bottom: -160px;
+    left: 30%;
+    background: var(--aurora-4);
+    animation: auroraFloat 18s ease-in-out infinite;
+  }
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+        to right,
+        color-mix(in srgb, var(--color-border) 60%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-border) 60%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 44px 44px;
+    mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 72%);
+    -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 72%);
+    opacity: 0.5;
+  }
+  .hero-inner {
+    padding: var(--space-7) var(--space-5);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-title {
+    font-size: 3rem;
+    line-height: 1.15;
+    margin: var(--space-4) 0 var(--space-3);
+    max-width: 900px;
+  }
+  .hero-sub {
+    margin: 0 auto;
+    color: var(--color-text-muted);
+    font-size: 1.12rem;
+    max-width: 640px;
+  }
+  .hero-cta {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    width: 100%;
+    max-width: 720px;
+  }
+  .stat {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+  }
+  .stat-value {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1;
+    font-family: var(--font-mono);
+  }
+  .stat-label {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  /* ===== 通用区块 ===== */
+  .block {
+    margin-top: var(--space-8);
+  }
+  .block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-5);
+  }
+  .block-head .section-heading {
+    margin: 0;
+  }
+  .block-sub,
+  .block-link {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+  .block-link:hover {
+    color: var(--color-primary);
+  }
+
+  /* ===== 核心能力 ===== */
+  .skill-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .skill-chip {
+    padding: 10px 18px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--color-text-soft);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    transition: all var(--transition-slow);
+    cursor: default;
+  }
+  .skill-chip:hover {
+    color: #fff;
+    background: var(--gradient-primary);
+    border-color: transparent;
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow-soft);
+  }
+
+  /* ===== 最新研究 ===== */
+  .post-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+  .empty {
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: var(--space-7) 0;
+  }
+
+  @media (max-width: 900px) {
+    .hero-title {
+      font-size: 2.3rem;
+    }
+    .stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .post-list {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 640px) {
+    .hero-title {
+      font-size: 1.85rem;
+    }
+    .hero-sub {
+      font-size: 1rem;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+    }
+  }
+</style>

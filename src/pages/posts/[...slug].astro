@@ -1,0 +1,30 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostLayout from '../../layouts/PostLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('posts')).sort(
+    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+  );
+
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: {
+      post,
+      // 列表按时间倒序：i-1 为更新的文章（上一篇），i+1 为更早的文章（下一篇）
+      prev: posts[i - 1] ?? null,
+      next: posts[i + 1] ?? null,
+    },
+  }));
+}
+
+const { post, prev, next } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <PostLayout post={post} prev={prev} next={next}>
+    <Content />
+  </PostLayout>
+</BaseLayout>

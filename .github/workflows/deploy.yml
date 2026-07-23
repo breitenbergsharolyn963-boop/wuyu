@@ -1,0 +1,61 @@
+name: Deploy to GitHub Pages
+
+on:
+  # 推送到 main 分支时自动部署
+  push:
+    branches: [main]
+  # 也支持在 Actions 页面手动触发
+  workflow_dispatch:
+
+# 赋予 GITHUB_TOKEN 发布 Pages 所需的权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只跑一个部署，避免并发冲突
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # 把仓库信息注入构建环境，astro.config.mjs 据此自动设置 base 子路径
+    env:
+      GH_OWNER: ${{ github.repository_owner }}
+      GH_REPO: ${{ github.event.repository.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

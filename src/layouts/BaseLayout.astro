@@ -1,0 +1,86 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = '一个以个人简历为主题的博客站点' } = Astro.props;
+const fullTitle = title === 'ResumeBlog' ? title : `${title} · ResumeBlog`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={import.meta.env.BASE_URL + 'favicon.svg'} />
+    <title>{fullTitle}</title>
+    <!-- 防深色模式闪烁：在首帧渲染前应用主题 -->
+    <script is:inline>
+      (function () {
+        try {
+          const saved = localStorage.getItem('theme');
+          const root = document.documentElement;
+          if (saved === 'dark') root.classList.add('dark');
+          else if (saved === 'light') root.classList.add('light');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="scroll-progress" id="scroll-progress"></div>
+    <Navbar />
+    <main class="site-main">
+      <slot />
+    </main>
+    <Footer />
+
+    <button class="back-to-top" id="back-to-top" aria-label="返回顶部">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19V5M5 12l7-7 7 7" />
+      </svg>
+    </button>
+
+    <script>
+      // 滚动进度条 + 返回顶部按钮
+      const progress = document.getElementById('scroll-progress');
+      const backBtn = document.getElementById('back-to-top');
+      const onScroll = () => {
+        const scrollTop = window.scrollY;
+        const height = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = height > 0 ? (scrollTop / height) * 100 : 0;
+        if (progress) progress.style.width = pct + '%';
+        if (backBtn) backBtn.classList.toggle('show', scrollTop > 400);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+      backBtn?.addEventListener('click', () =>
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      );
+
+      // 滚动揭示动画：进入视口时淡入上滑
+      const reveals = document.querySelectorAll('[data-reveal]');
+      if ('IntersectionObserver' in window && reveals.length) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+        );
+        reveals.forEach((el) => io.observe(el));
+      } else {
+        reveals.forEach((el) => el.classList.add('revealed'));
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,366 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { profile } from '../data/profile';
+
+const sectionTitle = (text: string) => text;
+const emailContact = profile.contacts.find((c) => c.href?.startsWith('mailto:'));
+const email = emailContact?.href?.replace('mailto:', '') || 'contact@example.com';
+---
+
+<BaseLayout title="关于" description={`${profile.name} 的个人简历`}>
+  <div class="container container-narrow resume">
+    <!-- 头部：个人信息 -->
+    <header class="resume-hero card card-glow" data-reveal>
+      <img class="avatar" src={`${import.meta.env.BASE_URL}${profile.avatar.replace(/^\//, '')}`} alt={profile.name} width="96" height="96" />
+      <div class="hero-text">
+        <h1 class="hero-name">{profile.name}</h1>
+        <p class="hero-title">{profile.title}</p>
+        <p class="hero-tagline">{profile.tagline}</p>
+      </div>
+      <ul class="contacts">
+        {
+          profile.contacts.map((c) => (
+            <li>
+              <span class="contact-label">{c.label}</span>
+              {c.href ? (
+                <a class="contact-value" href={c.href}>
+                  {c.value}
+                </a>
+              ) : (
+                <span class="contact-value">{c.value}</span>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </header>
+
+    <!-- 教育背景 -->
+    <section class="resume-section" data-reveal>
+      <h2 class="section-title">{sectionTitle('教育背景')}</h2>
+      <div class="timeline">
+        {
+          profile.education.map((e) => (
+            <div class="timeline-item">
+              <div class="timeline-head">
+                <span class="timeline-title">{e.school}</span>
+                <span class="timeline-period">{e.period}</span>
+              </div>
+              <p class="timeline-sub">{e.degree}</p>
+              {e.detail && <p class="timeline-detail">{e.detail}</p>}
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 工作经历 -->
+    <section class="resume-section" data-reveal>
+      <h2 class="section-title">{sectionTitle('科研经历')}</h2>
+      <div class="timeline">
+        {
+          profile.experience.map((x) => (
+            <div class="timeline-item">
+              <div class="timeline-head">
+                <span class="timeline-title">
+                  {x.company}
+                  <span class="timeline-role">· {x.role}</span>
+                </span>
+                <span class="timeline-period">{x.period}</span>
+              </div>
+              {x.location && <p class="timeline-sub">{x.location}</p>}
+              <ul class="timeline-list">
+                {x.highlights.map((h) => (
+                  <li>{h}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 技能熟练度（动画技能条） -->
+    <section class="resume-section" data-reveal>
+      <h2 class="section-title">{sectionTitle('技能熟练度')}</h2>
+      <div class="skill-bars card">
+        {
+          profile.coreSkills.map((s, i) => (
+            <div class="skill-bar-row" data-reveal style={`--reveal-delay:${i * 0.08}s`}>
+              <div class="skill-bar-head">
+                <span class="skill-bar-name">{s.name}</span>
+                <span class="skill-bar-pct">{s.level}%</span>
+              </div>
+              <div class="skill-bar-track">
+                <span class="skill-bar-fill" style={`--level:${s.level}%`} />
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 技能列表 -->
+    <section class="resume-section" data-reveal>
+      <h2 class="section-title">{sectionTitle('技能列表')}</h2>
+      <div class="skills-grid">
+        {
+          profile.skills.map((g) => (
+            <div class="skill-group card card-glow">
+              <h3 class="skill-cat">{g.category}</h3>
+              <div class="tag-list">
+                {g.items.map((s) => (
+                  <span class="tag">{s}</span>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 项目经验 -->
+    <section class="resume-section" data-reveal>
+      <h2 class="section-title">{sectionTitle('项目经验')}</h2>
+      <div class="projects">
+        {
+          profile.projects.map((p, i) => (
+            <article class="project card card-glow" data-reveal style={`--reveal-delay:${i * 0.08}s`}>
+              <div class="timeline-head">
+                <span class="timeline-title">
+                  {p.link ? (
+                    <a href={p.link} target="_blank" rel="noopener">
+                      {p.name}
+                    </a>
+                  ) : (
+                    p.name
+                  )}
+                  <span class="timeline-role">· {p.role}</span>
+                </span>
+                <span class="timeline-period">{p.period}</span>
+              </div>
+              <p class="project-desc">{p.description}</p>
+              <div class="tag-list">
+                {p.tech.map((t) => (
+                  <span class="tag">{t}</span>
+                ))}
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 联系我 -->
+    <section class="resume-section" id="contact" data-reveal>
+      <h2 class="section-title">{sectionTitle('联系我')}</h2>
+      <p class="contact-intro">
+        对研究合作、学术交流或项目机会感兴趣？欢迎填写下方表单，或直接发送邮件。
+      </p>
+      <ContactForm email={email} />
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .resume {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-7);
+  }
+  .resume-hero {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-5);
+    align-items: start;
+  }
+  .avatar {
+    border-radius: var(--radius-full);
+    border: 3px solid var(--color-primary-soft);
+  }
+  .hero-name {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+  .hero-title {
+    margin: 4px 0 6px;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+  .hero-tagline {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+  .contacts {
+    grid-column: 1 / -1;
+    list-style: none;
+    margin: var(--space-3) 0 0;
+    padding: var(--space-4) 0 0;
+    border-top: 1px solid var(--color-border);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3) var(--space-5);
+  }
+  .contacts li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .contact-label {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+  }
+  .contact-value {
+    font-weight: 500;
+    color: var(--color-text);
+    word-break: break-all;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 1.35rem;
+    margin: 0 0 var(--space-4);
+  }
+  .section-title::before {
+    content: '';
+    width: 4px;
+    height: 1.2em;
+    border-radius: 2px;
+    background: var(--color-primary);
+  }
+
+  .timeline-item {
+    padding: var(--space-4) 0;
+    border-bottom: 1px dashed var(--color-border);
+  }
+  .timeline-item:last-child {
+    border-bottom: none;
+  }
+  .timeline-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .timeline-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  .timeline-role {
+    color: var(--color-text-muted);
+    font-weight: 500;
+    font-size: 0.92rem;
+  }
+  .timeline-period {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+  .timeline-sub {
+    margin: 4px 0 0;
+    color: var(--color-text-soft);
+  }
+  .timeline-detail {
+    margin: 4px 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+  .timeline-list {
+    margin: var(--space-3) 0 0;
+    padding-left: 1.2em;
+    color: var(--color-text-soft);
+  }
+  .timeline-list li {
+    margin-bottom: 6px;
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+  .skill-group {
+    padding: var(--space-4);
+  }
+  .skill-cat {
+    margin: 0 0 var(--space-3);
+    font-size: 1rem;
+  }
+
+  /* 动画技能条 */
+  .skill-bars {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .skill-bar-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .skill-bar-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .skill-bar-pct {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+  .skill-bar-track {
+    height: 9px;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-subtle);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+  .skill-bar-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    background-size: 200% 100%;
+    transition: width 1.3s var(--transition-slow);
+  }
+  .skill-bar-row.revealed .skill-bar-fill {
+    width: var(--level);
+    animation: gradientShift 4s ease infinite;
+  }
+
+  /* 联系区 */
+  .contact-intro {
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-5);
+  }
+
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .project-desc {
+    margin: var(--space-2) 0 var(--space-3);
+    color: var(--color-text-soft);
+  }
+
+  @media (max-width: 640px) {
+    .resume-hero {
+      grid-template-columns: 1fr;
+      text-align: center;
+      justify-items: center;
+    }
+    .contacts {
+      grid-template-columns: 1fr;
+    }
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

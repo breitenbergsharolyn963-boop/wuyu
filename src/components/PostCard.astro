@@ -1,0 +1,59 @@
+---
+import FormattedDate from './FormattedDate.astro';
+import TagList from './TagList.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { title, description, pubDate, tags } = post.data;
+---
+
+<article class="post-card card card-glow">
+  <div class="post-meta">
+    <FormattedDate date={pubDate} class="post-date" />
+  </div>
+  <h2 class="post-title">
+    <a href={`${import.meta.env.BASE_URL}posts/${post.id}`}>{title}</a>
+  </h2>
+  <p class="post-excerpt">{description}</p>
+  <TagList tags={tags} class="post-tags" />
+</article>
+
+<style>
+  .post-card {
+    display: block;
+  }
+  .post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  }
+  .post-meta {
+    margin-bottom: var(--space-2);
+  }
+  .post-date {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+  .post-title {
+    margin: 0 0 var(--space-2);
+    font-size: 1.35rem;
+  }
+  .post-title a {
+    color: var(--color-text);
+  }
+  .post-title a:hover {
+    color: var(--color-primary);
+  }
+  .post-excerpt {
+    margin: 0 0 var(--space-4);
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+  }
+  .post-tags {
+    margin-top: var(--space-2);
+  }
+</style>
