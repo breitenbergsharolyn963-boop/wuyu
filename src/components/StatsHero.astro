@@ -1,0 +1,114 @@
+---
+import { profile } from '../data/profile';
+
+const greeting = `你好，我是 ${profile.name}`;
+---
+
+<section class="stats-hero" data-reveal>
+  <div class="hero-glow" aria-hidden="true"></div>
+  <p class="hero-eyebrow">RESUME · 个人简历</p>
+  <h1 class="hero-greeting gradient-text">{greeting}</h1>
+  <p class="hero-tagline">{profile.tagline}</p>
+
+  <div class="stat-grid">
+    {
+      profile.stats.map((s, i) => (
+        <div class="stat-card" data-reveal style={`--reveal-delay:${i * 0.08}s`}>
+          <span class="stat-value" data-count={s.value}>{s.value}</span>
+          <span class="stat-label">{s.label}</span>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .stats-hero {
+    position: relative;
+    padding: var(--space-8) var(--space-6);
+    border-radius: var(--radius-xl);
+    background: var(--glass-bg, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+  .hero-glow {
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, var(--color-primary-soft), transparent 65%);
+    filter: blur(20px);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    position: relative;
+    margin: 0 0 var(--space-3);
+    font-size: 0.8rem;
+    letter-spacing: 0.22em;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+  }
+  .hero-greeting {
+    position: relative;
+    margin: 0;
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+    line-height: 1.15;
+    font-weight: 800;
+  }
+  .hero-tagline {
+    position: relative;
+    margin: var(--space-4) 0 0;
+    max-width: 56ch;
+    color: var(--color-text-soft);
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+  .stat-grid {
+    position: relative;
+    margin-top: var(--space-7);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+  .stat-card {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    text-align: center;
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-primary-soft);
+  }
+  .stat-value {
+    display: block;
+    font-size: 1.7rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    background: var(--gradient-primary);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientShift 6s ease infinite;
+  }
+  .stat-label {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 640px) {
+    .stats-hero {
+      padding: var(--space-6) var(--space-4);
+    }
+    .stat-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

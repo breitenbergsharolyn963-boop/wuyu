@@ -1,0 +1,251 @@
+---
+import DownloadResume from './DownloadResume.astro';
+import { profile } from '../data/profile';
+---
+
+<aside class="sidebar" data-reveal>
+  <div class="sidebar-card card card-glow">
+    <div class="avatar-wrap">
+      <img
+        class="avatar"
+        src={`${import.meta.env.BASE_URL}${profile.avatar.replace(/^\//, '')}`}
+        alt={profile.name}
+        width="112"
+        height="112"
+      />
+      <span class="avatar-ring" aria-hidden="true"></span>
+    </div>
+
+    <h1 class="side-name">{profile.name}</h1>
+    <p class="side-title">{profile.title}</p>
+    <p class="side-bio">{profile.bioShort}</p>
+
+    <div class="side-actions">
+      <DownloadResume variant="primary" label="下载简历 (PDF)" />
+    </div>
+
+    <ul class="side-socials">
+      {
+        profile.socials.map((s) => (
+          <li>
+            <a href={s.url} target="_blank" rel="noopener noreferrer">
+              {s.platform}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <dl class="side-info">
+      <div class="info-row">
+        <dt>所在地</dt>
+        <dd>{profile.location}</dd>
+      </div>
+      <div class="info-row">
+        <dt>语言</dt>
+        <dd>{profile.languages.join(' · ')}</dd>
+      </div>
+    </dl>
+
+    <div class="side-block">
+      <h2 class="side-block-title">爱好</h2>
+      <div class="side-hobbies">
+        {profile.hobbies.map((h) => <span class="hobby-tag">{h}</span>)}
+      </div>
+    </div>
+
+    <div class="side-block">
+      <h2 class="side-block-title">核心能力</h2>
+      <ul class="side-skills">
+        {
+          profile.coreSkills.slice(0, 5).map((s) => (
+            <li class="side-skill">
+              <span class="side-skill-name">{s.name}</span>
+              <span class="side-skill-track">
+                <span class="side-skill-fill" style={`--level:${s.level}%`} />
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .sidebar {
+    position: sticky;
+    top: calc(var(--space-8) + 64px);
+    align-self: start;
+  }
+  .sidebar-card {
+    padding: var(--space-6) var(--space-5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: var(--glass-bg, rgba(255, 255, 255, 0.04));
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--color-border);
+  }
+  .avatar-wrap {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    margin-bottom: var(--space-4);
+  }
+  .avatar {
+    width: 112px;
+    height: 112px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
+    border: 3px solid var(--color-bg);
+  }
+  .avatar-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    background-size: 200% 200%;
+    filter: blur(8px);
+    opacity: 0.55;
+    animation: gradientShift 6s ease infinite;
+    z-index: 0;
+  }
+  .side-name {
+    margin: 0;
+    font-size: 1.5rem;
+    letter-spacing: 0.02em;
+  }
+  .side-title {
+    margin: 6px 0 0;
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .side-bio {
+    margin: var(--space-3) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .side-actions {
+    margin-top: var(--space-4);
+    width: 100%;
+  }
+  .side-socials {
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: var(--space-4) 0 0;
+    border-top: 1px solid var(--color-border);
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .side-socials a {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.82rem;
+    color: var(--color-text-soft);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    transition: all var(--transition-fast);
+  }
+  .side-socials a:hover {
+    color: #fff;
+    background: var(--gradient-primary);
+    border-color: transparent;
+    transform: translateY(-2px);
+  }
+  .side-info {
+    width: 100%;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    text-align: left;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: 0.84rem;
+  }
+  .info-row dt {
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+  .info-row dd {
+    margin: 0;
+    color: var(--color-text-soft);
+    text-align: right;
+  }
+  .side-block {
+    width: 100%;
+    margin-top: var(--space-5);
+    text-align: left;
+  }
+  .side-block-title {
+    font-size: 0.95rem;
+    margin: 0 0 var(--space-3);
+    padding-left: 10px;
+    border-left: 3px solid var(--color-primary);
+  }
+  .side-hobbies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .hobby-tag {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    color: var(--color-text-soft);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+  }
+  .side-skills {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .side-skill-name {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-text-soft);
+    margin-bottom: 5px;
+  }
+  .side-skill-track {
+    display: block;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-subtle);
+    overflow: hidden;
+  }
+  .side-skill-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    transition: width 1.2s var(--transition-slow);
+  }
+  .sidebar.revealed .side-skill-fill {
+    width: var(--level);
+  }
+
+  @media (max-width: 900px) {
+    .sidebar {
+      position: static;
+    }
+  }
+</style>

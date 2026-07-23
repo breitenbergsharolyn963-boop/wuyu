@@ -34,6 +34,18 @@ export interface StatItem {
   label: string;
 }
 
+export interface SocialLink {
+  platform: string;
+  url: string;
+}
+
+export interface CertificateItem {
+  name: string;
+  issuer: string;
+  date: string;
+  detail?: string;
+}
+
 export interface ProjectItem {
   name: string;
   role: string;
@@ -55,6 +67,12 @@ export interface Profile {
   coreSkills: CoreSkill[];
   stats: StatItem[];
   projects: ProjectItem[];
+  bioShort: string;
+  location: string;
+  languages: string[];
+  socials: SocialLink[];
+  hobbies: string[];
+  certificates: CertificateItem[];
 }
 
 // 说明：以下为根据本地论文/个人事迹文档提取的真实信息。
@@ -155,5 +173,20 @@ export const profile: Profile = {
         '针对 Rocky 导出的海量欧拉力统计 CSV，开发自动导出 + Polars 多线程列重排的后处理管线，在保证物理信息完整的前提下显著压缩文件体积、统一字段顺序。',
       tech: ['Python', 'Polars', 'OpenCV'],
     },
+  ],
+  bioShort: '化学工程硕士，专注超细粉体离散元仿真。喜欢把微观接触参数与宏观流态用代码对话，也享受把枯燥数据画成图的时刻。',
+  location: '中国 · 武汉（占位，请替换）',
+  languages: ['中文（母语）', 'English (CET-6, 占位)'],
+  socials: [
+    { platform: 'GitHub', url: 'https://github.com/' },
+    { platform: 'Email', url: 'mailto:wu.yu@example.edu.cn' },
+    { platform: 'ORCID', url: 'https://orcid.org/' },
+    { platform: '知乎', url: 'https://www.zhihu.com/' },
+  ],
+  hobbies: ['数据可视化', '机械键盘', '长跑', '咖啡冲煮', '开源工具折腾'],
+  certificates: [
+    { name: '硕士研究生三等学业奖学金', issuer: '化学工程与制药学院', date: '2024' },
+    { name: '全国大学生化工设计竞赛 省二等奖（占位）', issuer: '（占位，请替换）', date: '2023' },
+    { name: 'Ansys Rocky DEM 认证（占位）', issuer: 'Ansys', date: '2025' },
   ],
 };

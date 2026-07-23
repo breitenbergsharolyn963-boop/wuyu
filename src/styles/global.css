@@ -602,6 +602,41 @@ a.tag:hover {
 }
 
 /* ============================================================
+   共享区块标题（跨组件：about / Certificates 等复用）
+   ============================================================ */
+.main-col {
+  counter-reset: sec;
+}
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 1.35rem;
+  margin: 0 0 var(--space-4);
+}
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 1.2em;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+.resume-section {
+  counter-increment: sec;
+  scroll-margin-top: 88px;
+}
+.section-title::after {
+  content: '0' counter(sec);
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+  opacity: 0.5;
+}
+
+/* ============================================================
    响应式
    ============================================================ */
 /* 平板 */
