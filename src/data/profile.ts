@@ -11,12 +11,19 @@ export interface EducationItem {
   detail?: string;
 }
 
+export interface RelatedLink {
+  type: 'post' | 'project';
+  id: string; // post: "<slug>.md"，project: "<slug>"
+  label: string;
+}
+
 export interface ExperienceItem {
   company: string;
   role: string;
   period: string;
   location?: string;
   highlights: string[];
+  related?: RelatedLink[];
 }
 
 export interface SkillGroup {
@@ -115,6 +122,12 @@ export const profile: Profile = {
         '引入粗粒化（CGP）方法将 10⁹ 量级的颗粒系统降至可行计算规模，实现高通量「虚拟粉末表征」。',
         '采用 RS-HDMR 全局敏感性分析（Python / SALib）量化滑动摩擦、滚动阻力、粘附刚度等微观参数对宏观流化质量的控制机制。',
         '编写 Rocky 自动化导出与 Polars 多线程后处理脚本，将欧拉力统计 CSV 的导出—重排流程完全流水线化。',
+      ],
+      related: [
+        { type: 'post', id: 'ultrafine-powder-dem.md', label: '超细粉体 DEM' },
+        { type: 'post', id: 'rs-hdmr-sensitivity.md', label: 'RS-HDMR 敏感性分析' },
+        { type: 'project', id: 'ultrafine-dem-drum', label: '转鼓 DEM 模拟' },
+        { type: 'project', id: 'cgp-data-pipeline', label: 'CGP 数据管线' },
       ],
     },
   ],

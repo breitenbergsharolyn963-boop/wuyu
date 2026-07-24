@@ -33,8 +33,6 @@ const dataPoly = skills
   .map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`)
   .join(' ');
 
-const dots = skills.map((s, i) => pt(i, (R * s.level) / 100));
-
 const labels = skills.map((s, i) => {
   const [x, y] = pt(i, labelR);
   const anchor = x < cx - 5 ? 'end' : x > cx + 5 ? 'start' : 'middle';
@@ -42,20 +40,45 @@ const labels = skills.map((s, i) => {
 });
 ---
 
-<div class="radar-wrap" data-reveal>
+<div
+  class="radar-wrap"
+  data-reveal
+  data-skills={JSON.stringify(skills.map((s) => ({ name: s.name, short: s.short, level: s.level })))}
+>
   <svg viewBox="0 0 360 330" class="radar" role="img" aria-label="核心能力雷达图">
     {ringPolys.map((pts) => <polygon class="radar-grid" points={pts} />)}
     {axisLines.map((a) => <line class="radar-axis" x1={cx} y1={cy} x2={a.x} y2={a.y} />)}
     <polygon class="radar-area" points={dataPoly} />
-    {dots.map(([x, y]) => <circle class="radar-dot" cx={x.toFixed(1)} cy={y.toFixed(1)} r="3.5" />)}
+    {
+      skills.map((s, i) => {
+        const [x, y] = pt(i, (R * s.level) / 100);
+        return (
+          <g class="radar-vertex">
+            <circle class="radar-dot" cx={x.toFixed(1)} cy={y.toFixed(1)} r="3.5" />
+            <circle
+              class="radar-hit"
+              data-i={i}
+              tabindex="0"
+              role="img"
+              aria-label={`${s.name} ${s.level}%`}
+              cx={x.toFixed(1)}
+              cy={y.toFixed(1)}
+              r="16"
+            />
+          </g>
+        );
+      })
+    }
     {labels.map((l) => (
       <text class="radar-label" x={l.x} y={l.y} text-anchor={l.anchor}>{l.text}</text>
     ))}
   </svg>
+  <div class="radar-tip" role="status" aria-live="polite"></div>
 </div>
 
 <style>
   .radar-wrap {
+    position: relative;
     display: flex;
     justify-content: center;
     padding: var(--space-4) 0;
@@ -85,6 +108,20 @@ const labels = skills.map((s, i) => {
   }
   .radar-dot {
     fill: var(--color-primary);
+    transition: transform 0.2s var(--transition);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .radar-dot.is-active {
+    transform: scale(1.8);
+  }
+  .radar-hit {
+    fill: transparent;
+    cursor: pointer;
+    outline: none;
+  }
+  .radar-hit:focus-visible {
+    fill: color-mix(in srgb, var(--color-primary) 18%, transparent);
   }
   .radar-label {
     fill: var(--color-text-muted);
@@ -119,10 +156,95 @@ const labels = skills.map((s, i) => {
       opacity: 1;
     }
   }
+  /* 悬浮提示 */
+  .radar-tip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, calc(-100% - 14px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 7px 12px;
+    border-radius: 10px;
+    background: var(--color-bg-elevated, #0e1117);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+    z-index: 5;
+  }
+  .radar-tip.show {
+    opacity: 1;
+  }
+  .rt-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .rt-val {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+  }
   @media (prefers-reduced-motion: reduce) {
     .radar-wrap.revealed .radar-area,
     .radar-wrap.revealed .radar-dot {
       animation: none;
     }
+    .radar-tip {
+      transition: none;
+    }
+    .radar-dot {
+      transition: none;
+    }
   }
 </style>
+
+<script>
+  const wrap = document.querySelector('.radar-wrap');
+  if (wrap) {
+    const data = JSON.parse(wrap.dataset.skills || '[]');
+    const tip = wrap.querySelector('.radar-tip');
+    const dots = wrap.querySelectorAll('.radar-dot');
+    const hits = wrap.querySelectorAll('.radar-hit');
+    let hideTimer;
+    const show = (i, target) => {
+      clearTimeout(hideTimer);
+      const s = data[i];
+      if (!s || !tip) return;
+      tip.replaceChildren();
+      const n = document.createElement('span');
+      n.className = 'rt-name';
+      n.textContent = s.short;
+      const v = document.createElement('span');
+      v.className = 'rt-val';
+      v.textContent = s.level + '%';
+      tip.append(n, v);
+      const wr = wrap.getBoundingClientRect();
+      const tr = target.getBoundingClientRect();
+      tip.style.left = tr.left + tr.width / 2 - wr.left + 'px';
+      tip.style.top = tr.top + tr.height / 2 - wr.top + 'px';
+      tip.classList.add('show');
+      if (dots[i]) dots[i].classList.add('is-active');
+    };
+    const hide = (i) => {
+      if (!tip) return;
+      hideTimer = setTimeout(() => {
+        tip.classList.remove('show');
+        if (dots[i]) dots[i].classList.remove('is-active');
+      }, 60);
+    };
+    hits.forEach((h) => {
+      const i = +h.dataset.i;
+      h.addEventListener('mouseenter', () => show(i, h));
+      h.addEventListener('mouseleave', () => hide(i));
+      h.addEventListener('focus', () => show(i, h));
+      h.addEventListener('blur', () => hide(i));
+    });
+  }
+</script>

@@ -56,6 +56,22 @@ const email = emailContact?.href?.replace('mailto:', '') || 'contact@example.com
                 <ul class="timeline-list">
                   {x.highlights.map((h) => <li>{h}</li>)}
                 </ul>
+                {
+                  x.related && x.related.length > 0 && (
+                    <div class="timeline-related">
+                      <span class="tr-label">相关</span>
+                      {x.related.map((r) => (
+                        <a
+                          class="tr-link"
+                          href={`${import.meta.env.BASE_URL}${r.type === 'post' ? 'posts' : 'projects'}/${r.id}`}
+                        >
+                          <span class="tr-type">{r.type === 'post' ? '文章' : '项目'}</span>
+                          <span class="tr-text">{r.label}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )
+                }
               </div>
             ))
           }
@@ -275,6 +291,45 @@ const email = emailContact?.href?.replace('mailto:', '') || 'contact@example.com
   }
   .timeline-list li {
     margin-bottom: 6px;
+  }
+  .timeline-related {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: var(--space-3);
+  }
+  .tr-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+  }
+  .tr-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-soft);
+    transition: all var(--transition);
+  }
+  .tr-link:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+  }
+  .tr-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    color: #fff;
   }
 
   .skills-grid {
