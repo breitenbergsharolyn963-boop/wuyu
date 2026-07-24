@@ -2,12 +2,29 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { profile } from '../data/profile';
 
-const ringColors = ['#ec4899', '#8b5cf6', '#06b6d4', '#6366f1'];
 const ringRadius = 40;
 const ringCircum = 2 * Math.PI * ringRadius;
 const topSkills = profile.coreSkills.slice(0, 4);
 const base = import.meta.env.BASE_URL;
 const nameInitial = profile.name.slice(0, 1);
+
+const ringDefs = [
+  { id: 'gradA', from: '#F472B6', to: '#A855F7' },
+  { id: 'gradB', from: '#22D3EE', to: '#818CF8' },
+  { id: 'gradC', from: '#34D399', to: '#6366F1' },
+  { id: 'gradD', from: '#FBBF24', to: '#EC4899' },
+];
+
+const rings = topSkills.map((s, i) => {
+  const pct = s.level / 100;
+  const sweep = pct * 360;
+  const largeArc = sweep > 180 ? 1 : 0;
+  const endAngle = -Math.PI / 2 + pct * 2 * Math.PI;
+  const endX = 50 + ringRadius * Math.cos(endAngle);
+  const endY = 50 + ringRadius * Math.sin(endAngle);
+  const offset = ringCircum - pct * ringCircum;
+  return { ...s, i, largeArc, endX, endY, offset, def: ringDefs[i % ringDefs.length] };
+});
 ---
 
 <BaseLayout title="ResumeBlog" description={`${profile.name} · ${profile.title} —— 个人简历与阶段性研究记录`}>
@@ -40,8 +57,10 @@ const nameInitial = profile.name.slice(0, 1);
   <section class="resume-body">
     <div class="container resume-inner">
       <aside class="sidebar" data-reveal>
+        <div class="sidebar-glow" aria-hidden="true"></div>
         <div class="avatar-wrap">
-          <img class="avatar-img" src={`${base}${profile.avatar.replace(/^\//, '')}`} alt={`${profile.name} 头像`} width="96" height="96" loading="eager" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'" />
+          <div class="avatar-halo" aria-hidden="true"></div>
+          <img class="avatar-img" src={`${base}${profile.avatar.replace(/^\//, '')}`} alt={`${profile.name} 头像`} width="96" height="96" loading="eager" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'; this.previousElementSibling.style.display='none'" />
           <div class="avatar-fallback" aria-hidden="true" style="display:none">{nameInitial}</div>
         </div>
         <h2 class="sidebar-name">{profile.name}</h2>
@@ -68,19 +87,46 @@ const nameInitial = profile.name.slice(0, 1);
         <div class="sidebar-section">
           <h3 class="sidebar-label">核心技能</h3>
           <div class="skill-rings">
-            {topSkills.map((s, i) => {
-              const offset = ringCircum - (s.level / 100) * ringCircum;
-              return (
-                <div class="ring-wrap">
-                  <svg width="110" height="110" viewBox="0 0 100 100" aria-hidden="true">
-                    <circle cx="50" cy="50" r={ringRadius} fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="8" />
-                    <circle cx="50" cy="50" r={ringRadius} fill="none" stroke={ringColors[i % ringColors.length]} stroke-width="8" stroke-linecap="round" stroke-dasharray={ringCircum} stroke-dashoffset={offset} transform="rotate(-90 50 50)" />
-                    <text x="50" y="55" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">{s.level}</text>
-                  </svg>
-                  <span class="ring-name">{s.short}</span>
-                </div>
-              );
-            })}
+            {rings.map(r => (
+              <div class="ring-wrap" data-ring data-level={r.level} style={`--ring-delay:${0.1 * r.i}s`}>
+                <svg width="110" height="110" viewBox="0 0 100 100" aria-hidden="true" class="ring-svg">
+                  <defs>
+                    <linearGradient id={r.def.id} x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color={r.def.from} />
+                      <stop offset="100%" stop-color={r.def.to} />
+                    </linearGradient>
+                    <filter id={`glow-${r.def.id}`} x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur stdDeviation="3" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <circle class="ring-track" cx="50" cy="50" r={ringRadius} fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="7" />
+                  <circle
+                    class="ring-arc"
+                    cx="50"
+                    cy="50"
+                    r={ringRadius}
+                    fill="none"
+                    stroke={`url(#${r.def.id})`}
+                    stroke-width="8"
+                    stroke-linecap="round"
+                    stroke-dasharray={ringCircum}
+                    stroke-dashoffset={ringCircum}
+                    data-offset={r.offset}
+                    transform="rotate(-90 50 50)"
+                    style={`filter:url(#glow-${r.def.id})`}
+                  />
+                  <circle class="ring-dot" cx={r.endX} cy={r.endY} r="4" fill="#fff" opacity="0" />
+                  <text class="ring-number" x="50" y="56" text-anchor="middle" fill="#fff" font-size="18" font-weight="700" font-family="Outfit, sans-serif">
+                    <tspan class="ring-counter" data-target={r.level}>0</tspan>
+                  </text>
+                </svg>
+                <span class="ring-name">{r.short} · {r.level}%</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -170,7 +216,7 @@ const nameInitial = profile.name.slice(0, 1);
                     <span class="skill-bar-level">{s.level}%</span>
                   </div>
                   <div class="skill-bar-track">
-                    <div class="skill-bar-fill" style={`width:${s.level}%; background:${ringColors[i % ringColors.length]}`}></div>
+                    <div class="skill-bar-fill" style={`width:${s.level}%; background:${ringDefs[i % ringDefs.length].to}`}></div>
                   </div>
                 </div>
               ))}
@@ -195,6 +241,61 @@ const nameInitial = profile.name.slice(0, 1);
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  (function () {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function countUp(el, target, duration = 1200) {
+      const start = performance.now();
+      function step(now) {
+        const p = Math.min((now - start) / duration, 1);
+        el.textContent = Math.round(easeOutCubic(p) * target);
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function drawRings(container) {
+      container.querySelectorAll('.ring-arc').forEach((arc, idx) => {
+        const target = parseFloat(arc.dataset.offset);
+        arc.style.transitionDelay = `${idx * 0.12}s`;
+        arc.style.strokeDashoffset = String(target);
+      });
+      container.querySelectorAll('.ring-dot').forEach((dot, idx) => {
+        dot.style.transitionDelay = `${0.4 + idx * 0.12}s`;
+        dot.style.opacity = '1';
+      });
+      container.querySelectorAll('.ring-counter').forEach((num) => {
+        const target = parseInt(num.dataset.target, 10);
+        countUp(num, target);
+      });
+    }
+
+    const rings = document.querySelectorAll('[data-ring]');
+    if (!rings.length) return;
+
+    if (reduced) {
+      rings.forEach((wrap) => drawRings(wrap));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          drawRings(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+
+    rings.forEach((wrap) => observer.observe(wrap));
+  })();
+</script>
 
 <style>
   /* ===== Hero ===== */
@@ -318,7 +419,6 @@ const nameInitial = profile.name.slice(0, 1);
   .sidebar {
     position: sticky;
     top: 88px;
-    /* 侧栏若高于视口，允许内部滚动，保证 sticky 吸附完整 */
     max-height: calc(100vh - 104px);
     overflow-y: auto;
     scrollbar-width: thin;
@@ -327,26 +427,66 @@ const nameInitial = profile.name.slice(0, 1);
     background: linear-gradient(160deg, #1e1b4b 0%, #312e81 60%, #4c1d95 100%);
     color: #fff;
     box-shadow: 0 20px 60px -20px rgba(0,0,0,0.25);
+    overflow-x: clip;
+  }
+  .sidebar-glow {
+    position: absolute;
+    inset: -40%;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(236,72,153,0.22) 0%, transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(124,58,237,0.20) 0%, transparent 40%);
+    animation: glowShift 12s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+  .sidebar > * {
+    position: relative;
+    z-index: 1;
   }
   .avatar-wrap {
+    position: relative;
     width: 96px;
     height: 96px;
     border-radius: 50%;
     overflow: hidden;
-    background: #7c3aed;
     display: grid;
     place-items: center;
     margin-bottom: 18px;
+  }
+  .avatar-halo {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #ec4899, #8b5cf6, #06b6d4, #ec4899);
+    animation: haloSpin 6s linear infinite;
+    z-index: -1;
+    opacity: 0.9;
+  }
+  .avatar-halo::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
   }
   .avatar-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
+    position: relative;
+    z-index: 1;
   }
   .avatar-fallback {
+    position: absolute;
+    inset: 0;
     font-size: 2.2rem;
     font-weight: 700;
     color: #fff;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+    z-index: 2;
   }
   .sidebar-name {
     font-size: 1.65rem;
@@ -391,6 +531,7 @@ const nameInitial = profile.name.slice(0, 1);
   .contact-label { font-size: 0.72rem; color: rgba(255,255,255,0.55); }
   .contact-value { font-size: 0.85rem; color: rgba(255,255,255,0.92); }
   .contact-list a:hover { color: #fff; }
+
   .skill-rings {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -401,9 +542,39 @@ const nameInitial = profile.name.slice(0, 1);
     flex-direction: column;
     align-items: center;
     gap: 6px;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .ring-wrap svg { display: block; }
+  .ring-wrap:hover {
+    transform: translateY(-4px) scale(1.04);
+  }
+  .ring-svg {
+    display: block;
+    overflow: visible;
+    filter: drop-shadow(0 6px 16px rgba(236, 72, 153, 0.22));
+    transition: filter 0.35s ease;
+  }
+  .ring-wrap:hover .ring-svg {
+    filter: drop-shadow(0 10px 28px rgba(236, 72, 153, 0.35));
+  }
+  .ring-track { transition: stroke 0.3s ease; }
+  .ring-arc {
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .ring-dot {
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-origin: center;
+    transform: scale(0);
+  }
+  .ring-wrap.is-drawn .ring-dot,
+  .ring-wrap:hover .ring-dot {
+    transform: scale(1);
+  }
+  .ring-number {
+    pointer-events: none;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
   .ring-name { font-size: 0.8rem; color: rgba(255,255,255,0.85); }
+
   .tag-list {
     display: flex;
     flex-wrap: wrap;
@@ -416,6 +587,12 @@ const nameInitial = profile.name.slice(0, 1);
     background: rgba(255,255,255,0.12);
     color: rgba(255,255,255,0.9);
     border: 1px solid rgba(255,255,255,0.18);
+    transition: background 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+  }
+  .glass-tag:hover {
+    background: rgba(255,255,255,0.22);
+    border-color: rgba(255,255,255,0.35);
+    transform: translateY(-2px);
   }
 
   /* ===== Main column ===== */
@@ -559,6 +736,19 @@ const nameInitial = profile.name.slice(0, 1);
     color: var(--color-text-muted);
   }
 
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  @keyframes haloSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes glowShift {
+    from { transform: translate3d(-2%, -2%, 0) scale(1); opacity: 0.8; }
+    to { transform: translate3d(2%, 2%, 0) scale(1.05); opacity: 1; }
+  }
+
   /* ===== Responsive ===== */
   @media (max-width: 1020px) {
     .hero-inner { grid-template-columns: 1fr; text-align: center; }
@@ -578,5 +768,16 @@ const nameInitial = profile.name.slice(0, 1);
     .stats-row { grid-template-columns: 1fr 1fr; }
     .resume-card-head { flex-direction: column; gap: 6px; }
     .sidebar { padding: 24px 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .visual-3d,
+    .avatar-halo,
+    .sidebar-glow {
+      animation: none;
+    }
+    .ring-arc {
+      transition: none;
+    }
   }
 </style>
