@@ -185,6 +185,116 @@ function initCardGlow(): void {
 }
 
 /* ----------------------------------------------------------------
+ * 5) 标题解码（scramble / decode）
+ *    对 .hero-greeting 与 .hero-title .gradient-text 做字符翻滚解锁，
+ *    加载时从乱码逐位收敛为目标文字，营造赛博式入场。
+ * ---------------------------------------------------------------- */
+function initScramble(): void {
+  if (prefersReducedMotion()) return;
+  const targets = document.querySelectorAll<HTMLElement>(
+    '.hero-greeting, .hero-title .gradient-text'
+  );
+  if (!targets.length) return;
+
+  const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!<>-_\\/[]{}=+*^?#';
+  const cjk = '吴宇颗粒流仿真真空天地玄黄宇宙洪荒赵钱孙李周郑王';
+  const glyph = (): string =>
+    Math.random() < 0.5
+      ? latin[Math.floor(Math.random() * latin.length)]
+      : cjk[Math.floor(Math.random() * cjk.length)];
+
+  targets.forEach((el) => {
+    const finalText = el.textContent || '';
+    const total = finalText.length;
+    if (!total) return;
+    const speed = 2; // 每多少帧解锁一个字符
+    let frame = 0;
+    const tick = () => {
+      const revealed = Math.floor(frame / speed);
+      let out = '';
+      for (let i = 0; i < total; i++) {
+        const ch = finalText[i];
+        if (i < revealed || ch === ' ' || ch === '，' || ch === '·') {
+          out += ch;
+        } else {
+          out += glyph();
+        }
+      }
+      el.textContent = out;
+      frame++;
+      if (revealed < total) {
+        requestAnimationFrame(tick);
+      } else {
+        el.textContent = finalText;
+      }
+    };
+    // 稍延迟，待滚动揭示动画已起步后再解码
+    window.setTimeout(() => requestAnimationFrame(tick), 280);
+  });
+}
+
+/* ----------------------------------------------------------------
+ * 6) 3D 倾斜（tilt）
+ *    鼠标悬停卡片时，依光标位置做透视旋转，松手回正。
+ *    仅覆盖 transform，box-shadow / border 等既有悬浮效果不受影响。
+ * ---------------------------------------------------------------- */
+function initTilt(): void {
+  if (prefersReducedMotion()) return;
+  const cards = document.querySelectorAll<HTMLElement>(
+    '.card, .stat-card, .car-slide, .project'
+  );
+  const maxTilt = 7;
+  cards.forEach((card) => {
+    const onEnter = () => {
+      card.style.transition = 'transform 0.12s ease-out';
+    };
+    const onMove = rafThrottle((e: MouseEvent) => {
+      const rect = card.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width - 0.5;
+      const py = (e.clientY - rect.top) / rect.height - 0.5;
+      const rx = (-py * maxTilt).toFixed(2);
+      const ry = (px * maxTilt).toFixed(2);
+      card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
+    });
+    const onLeave = () => {
+      card.style.transition = 'transform 0.5s ease-out';
+      card.style.transform = '';
+    };
+    card.addEventListener('mouseenter', onEnter);
+    card.addEventListener('mousemove', onMove);
+    card.addEventListener('mouseleave', onLeave);
+  });
+}
+
+/* ----------------------------------------------------------------
+ * 7) 磁吸按钮（magnetic）
+ *    光标靠近 .btn 时，按钮轻微向光标方向位移，离开回正。
+ * ---------------------------------------------------------------- */
+function initMagnetic(): void {
+  if (prefersReducedMotion()) return;
+  const btns = document.querySelectorAll<HTMLElement>('.btn');
+  const strength = 0.28;
+  btns.forEach((btn) => {
+    const onEnter = () => {
+      btn.style.transition = 'transform 0.15s ease-out';
+    };
+    const onMove = rafThrottle((e: MouseEvent) => {
+      const rect = btn.getBoundingClientRect();
+      const mx = e.clientX - (rect.left + rect.width / 2);
+      const my = e.clientY - (rect.top + rect.height / 2);
+      btn.style.transform = `translate(${(mx * strength).toFixed(1)}px, ${(my * strength).toFixed(1)}px)`;
+    });
+    const onLeave = () => {
+      btn.style.transition = 'transform 0.4s ease-out';
+      btn.style.transform = '';
+    };
+    btn.addEventListener('mouseenter', onEnter);
+    btn.addEventListener('mousemove', onMove);
+    btn.addEventListener('mouseleave', onLeave);
+  });
+}
+
+/* ----------------------------------------------------------------
  * 初始化入口
  *    Astro 的 <script> 为 module（defer），DOM 已解析后运行；
  *    此处兼顾 readyState，确保稳健。
@@ -194,6 +304,9 @@ function init(): void {
   initParallax();
   initStatCountUp();
   initCardGlow();
+  initScramble();
+  initTilt();
+  initMagnetic();
 }
 
 if (document.readyState === 'loading') {
