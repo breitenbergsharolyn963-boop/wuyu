@@ -318,6 +318,10 @@ const nameInitial = profile.name.slice(0, 1);
   .sidebar {
     position: sticky;
     top: 88px;
+    /* 侧栏若高于视口，允许内部滚动，保证 sticky 吸附完整 */
+    max-height: calc(100vh - 104px);
+    overflow-y: auto;
+    scrollbar-width: thin;
     border-radius: 24px;
     padding: 32px 28px;
     background: linear-gradient(160deg, #1e1b4b 0%, #312e81 60%, #4c1d95 100%);
@@ -563,7 +567,7 @@ const nameInitial = profile.name.slice(0, 1);
     .hero-visual { order: -1; }
     .visual-3d { width: 160px; height: 160px; font-size: 2.2rem; }
     .resume-inner { grid-template-columns: 1fr; }
-    .sidebar { position: static; }
+    .sidebar { position: static; max-height: none; overflow-y: visible; }
     .stats-row { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 640px) {

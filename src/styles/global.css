@@ -162,7 +162,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color var(--transition), color var(--transition);
-  overflow-x: hidden;
+  /* 用 clip 而非 hidden：hidden 会把 body 变成滚动容器，导致后代 position: sticky 失效 */
+  overflow-x: clip;
 }
 
 a {

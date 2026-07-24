@@ -13,7 +13,8 @@
 
 /* ---------- 0. 基础安全：杜绝横向溢出 & 媒体 CLS ---------- */
 html {
-  overflow-x: hidden;
+  /* 用 clip 而非 hidden：hidden 会破坏后代 position: sticky（滚动容器劫持） */
+  overflow-x: clip;
 }
 img,
 svg,
