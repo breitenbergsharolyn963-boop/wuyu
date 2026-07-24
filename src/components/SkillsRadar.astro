@@ -1,0 +1,128 @@
+---
+import { profile } from '../data/profile';
+
+const skills = profile.coreSkills;
+const N = skills.length;
+
+const cx = 180;
+const cy = 158;
+const R = 118;
+const labelR = 142;
+const ringLevels = [0.25, 0.5, 0.75, 1];
+
+const angle = (i: number) => (-90 + (360 / N) * i) * (Math.PI / 180);
+const pt = (i: number, r: number): [number, number] => [
+  cx + r * Math.cos(angle(i)),
+  cy + r * Math.sin(angle(i)),
+];
+
+const ringPolys = ringLevels.map((lv) =>
+  skills
+    .map((_, i) => pt(i, R * lv))
+    .map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(' ')
+);
+
+const axisLines = skills.map((_, i) => {
+  const [x, y] = pt(i, R);
+  return { x: x.toFixed(1), y: y.toFixed(1) };
+});
+
+const dataPoly = skills
+  .map((s, i) => pt(i, (R * s.level) / 100))
+  .map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`)
+  .join(' ');
+
+const dots = skills.map((s, i) => pt(i, (R * s.level) / 100));
+
+const labels = skills.map((s, i) => {
+  const [x, y] = pt(i, labelR);
+  const anchor = x < cx - 5 ? 'end' : x > cx + 5 ? 'start' : 'middle';
+  return { text: s.short, x: x.toFixed(1), y: (y + 4).toFixed(1), anchor };
+});
+---
+
+<div class="radar-wrap" data-reveal>
+  <svg viewBox="0 0 360 330" class="radar" role="img" aria-label="核心能力雷达图">
+    {ringPolys.map((pts) => <polygon class="radar-grid" points={pts} />)}
+    {axisLines.map((a) => <line class="radar-axis" x1={cx} y1={cy} x2={a.x} y2={a.y} />)}
+    <polygon class="radar-area" points={dataPoly} />
+    {dots.map(([x, y]) => <circle class="radar-dot" cx={x.toFixed(1)} cy={y.toFixed(1)} r="3.5" />)}
+    {labels.map((l) => (
+      <text class="radar-label" x={l.x} y={l.y} text-anchor={l.anchor}>{l.text}</text>
+    ))}
+  </svg>
+</div>
+
+<style>
+  .radar-wrap {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-4) 0;
+  }
+  .radar {
+    width: 100%;
+    max-width: 380px;
+    height: auto;
+    overflow: visible;
+  }
+  .radar-grid {
+    fill: none;
+    stroke: var(--color-border);
+    stroke-width: 1;
+  }
+  .radar-axis {
+    stroke: var(--color-border);
+    stroke-width: 1;
+  }
+  .radar-area {
+    fill: var(--color-primary);
+    fill-opacity: 0.22;
+    stroke: var(--color-primary);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    transform-origin: 180px 158px;
+  }
+  .radar-dot {
+    fill: var(--color-primary);
+  }
+  .radar-label {
+    fill: var(--color-text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font-sans);
+  }
+  .radar-wrap.revealed .radar-area {
+    animation: radarPop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .radar-wrap.revealed .radar-dot {
+    animation: dotPop 0.5s ease both;
+    animation-delay: 0.5s;
+  }
+  @keyframes radarPop {
+    from {
+      transform: scale(0.2);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes dotPop {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .radar-wrap.revealed .radar-area,
+    .radar-wrap.revealed .radar-dot {
+      animation: none;
+    }
+  }
+</style>

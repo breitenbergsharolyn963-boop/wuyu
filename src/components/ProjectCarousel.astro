@@ -15,7 +15,7 @@ const { projects } = Astro.props;
   <div class="car-track" data-track>
     {
       projects.map((p, i) => (
-        <article class="car-slide card card-glow" data-slide>
+        <a class="car-slide card card-glow" href={`${import.meta.env.BASE_URL}projects/${p.slug}`} data-slide>
           <div class="slide-index">{String(i + 1).padStart(2, '0')}</div>
           <div class="slide-head">
             <h3 class="slide-title">{p.name}</h3>
@@ -28,12 +28,8 @@ const { projects } = Astro.props;
               <span class="tag">{t}</span>
             ))}
           </div>
-          {p.link && (
-            <a class="slide-link" href={p.link} target="_blank" rel="noopener">
-              查看详情 →
-            </a>
-          )}
-        </article>
+          <span class="slide-link">查看案例 →</span>
+        </a>
       ))
     }
   </div>

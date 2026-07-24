@@ -4,6 +4,7 @@ import ContactForm from '../components/ContactForm.astro';
 import Sidebar from '../components/Sidebar.astro';
 import StatsHero from '../components/StatsHero.astro';
 import Certificates from '../components/Certificates.astro';
+import SkillsRadar from '../components/SkillsRadar.astro';
 import { profile } from '../data/profile';
 
 const sectionTitle = (text: string) => text;
@@ -98,6 +99,14 @@ const email = emailContact?.href?.replace('mailto:', '') || 'contact@example.com
         </div>
       </section>
 
+      <!-- 能力雷达 -->
+      <section class="resume-section" data-reveal>
+        <h2 class="section-title">{sectionTitle('能力雷达')}</h2>
+        <div class="radar-card card">
+          <SkillsRadar />
+        </div>
+      </section>
+
       <!-- 项目经验 -->
       <section class="resume-section" data-reveal>
         <h2 class="section-title">{sectionTitle('项目经验')}</h2>
@@ -122,6 +131,7 @@ const email = emailContact?.href?.replace('mailto:', '') || 'contact@example.com
                 <div class="tag-list">
                   {p.tech.map((t) => <span class="tag">{t}</span>)}
                 </div>
+                <a class="proj-more" href={`${import.meta.env.BASE_URL}projects/${p.slug}`}>查看案例 →</a>
               </article>
             ))
           }
@@ -192,12 +202,41 @@ const email = emailContact?.href?.replace('mailto:', '') || 'contact@example.com
     opacity: 0.5;
   }
 
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    border-radius: 2px;
+    background: linear-gradient(
+      180deg,
+      var(--color-primary),
+      color-mix(in srgb, var(--color-primary) 25%, transparent)
+    );
+  }
   .timeline-item {
-    padding: var(--space-4) 0;
-    border-bottom: 1px dashed var(--color-border);
+    position: relative;
+    padding: 0 0 var(--space-5);
   }
   .timeline-item:last-child {
-    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -27px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    box-shadow: 0 0 0 4px var(--color-bg);
   }
   .timeline-head {
     display: flex;
@@ -309,6 +348,21 @@ const email = emailContact?.href?.replace('mailto:', '') || 'contact@example.com
   .project-desc {
     margin: var(--space-2) 0 var(--space-3);
     color: var(--color-text-soft);
+  }
+  .radar-card {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-5);
+  }
+  .proj-more {
+    display: inline-block;
+    margin-top: var(--space-3);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+  .proj-more:hover {
+    text-decoration: underline;
   }
 
   @media (max-width: 900px) {

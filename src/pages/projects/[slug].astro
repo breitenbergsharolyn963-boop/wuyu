@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { profile } from '../../data/profile';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  return profile.projects.map((p) => ({
+    params: { slug: p.slug },
+    props: { project: p },
+  }));
+}
+
+const { project } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const related = posts.slice(0, 3);
+---
+
+<BaseLayout title={project.name} description={project.description}>
+  <div class="container project-detail">
+    <a class="back-link" href={`${base}projects`}>← 返回项目</a>
+
+    <header class="pd-head" data-reveal>
+      <h1 class="pd-title">{project.name}</h1>
+      <div class="pd-meta">
+        <span class="pd-role">{project.role}</span>
+        <span class="pd-dot">·</span>
+        <span class="pd-period">{project.period}</span>
+      </div>
+      <div class="tag-list">
+        {project.tech.map((t) => <span class="tag">{t}</span>)}
+      </div>
+    </header>
+
+    <div class="pd-hero" data-reveal aria-hidden="true">
+      <div class="pd-hero-glow"></div>
+      <span class="pd-hero-label">{project.role}</span>
+    </div>
+
+    <section class="pd-section" data-reveal>
+      <h2 class="pd-h2">项目概述</h2>
+      <p class="pd-desc">{project.description}</p>
+    </section>
+
+    {
+      project.link && (
+        <section class="pd-section" data-reveal>
+          <a class="btn btn-primary" href={project.link} target="_blank" rel="noopener">
+            访问项目 / 资源 ↗
+          </a>
+        </section>
+      )
+    }
+
+    <section class="pd-section" data-reveal>
+      <h2 class="pd-h2">相关文章</h2>
+      <div class="pd-rel">
+        {
+          related.map((post) => (
+            <a class="pd-rel-card card" href={`${base}posts/${post.id}`}>
+              <span class="pd-rel-title">{post.data.title}</span>
+              <span class="pd-rel-desc">{post.data.description}</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .project-detail {
+    max-width: 900px;
+    margin: 0 auto;
+    padding-top: var(--space-7);
+    padding-bottom: var(--space-9);
+  }
+  .back-link {
+    display: inline-block;
+    margin-bottom: var(--space-5);
+    color: var(--color-text-muted);
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .back-link:hover {
+    color: var(--color-primary);
+  }
+  .pd-head {
+    margin-bottom: var(--space-5);
+  }
+  .pd-title {
+    font-size: 2.1rem;
+    line-height: 1.25;
+    margin: 0 0 var(--space-3);
+  }
+  .pd-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    margin-bottom: var(--space-3);
+  }
+  .pd-role {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+  .pd-dot {
+    opacity: 0.5;
+  }
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tag {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+  .pd-hero {
+    position: relative;
+    height: 300px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--color-primary), #8b5cf6 60%, #ec4899);
+    display: flex;
+    align-items: flex-end;
+    padding: var(--space-5);
+    margin-bottom: var(--space-6);
+  }
+  .pd-hero-glow {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%),
+      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.18), transparent 50%);
+    mix-blend-mode: overlay;
+  }
+  .pd-hero-label {
+    position: relative;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
+  .pd-section {
+    margin-bottom: var(--space-6);
+  }
+  .pd-h2 {
+    font-size: 1.35rem;
+    margin: 0 0 var(--space-3);
+  }
+  .pd-desc {
+    color: var(--color-text-soft);
+    font-size: 1.02rem;
+    line-height: 1.75;
+    margin: 0;
+  }
+  .pd-rel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+  .pd-rel-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition);
+  }
+  .pd-rel-title {
+    font-weight: 600;
+    font-size: 0.98rem;
+    line-height: 1.4;
+  }
+  .pd-rel-desc {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+  @media (max-width: 720px) {
+    .pd-title {
+      font-size: 1.6rem;
+    }
+    .pd-rel {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

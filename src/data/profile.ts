@@ -26,6 +26,7 @@ export interface SkillGroup {
 
 export interface CoreSkill {
   name: string;
+  short: string; // 雷达图轴标签用的简短名
   level: number; // 0-100，用于动画技能条
 }
 
@@ -47,6 +48,7 @@ export interface CertificateItem {
 }
 
 export interface ProjectItem {
+  slug: string;
   name: string;
   role: string;
   period: string;
@@ -135,12 +137,12 @@ export const profile: Profile = {
     },
   ],
   coreSkills: [
-    { name: 'Ansys Rocky DEM 建模与仿真', level: 92 },
-    { name: 'Python 科学计算 (NumPy / Polars)', level: 88 },
-    { name: '离散元 / 接触力学参数标定', level: 85 },
-    { name: 'RS-HDMR 全局敏感性分析', level: 80 },
-    { name: '粗粒化 (CGP) 与高通量后处理', level: 78 },
-    { name: '学术写作与数据可视化 (LaTeX)', level: 75 },
+    { short: 'DEM 建模', name: 'Ansys Rocky DEM 建模与仿真', level: 92 },
+    { short: 'Python', name: 'Python 科学计算 (NumPy / Polars)', level: 88 },
+    { short: '参数标定', name: '离散元 / 接触力学参数标定', level: 85 },
+    { short: '敏感性分析', name: 'RS-HDMR 全局敏感性分析', level: 80 },
+    { short: 'CGP', name: '粗粒化 (CGP) 与高通量后处理', level: 78 },
+    { short: '数据可视化', name: '学术写作与数据可视化 (LaTeX)', level: 75 },
   ],
   stats: [
     { value: '30μm', label: '超细粉体建模尺度' },
@@ -150,6 +152,7 @@ export const profile: Profile = {
   ],
   projects: [
     {
+      slug: 'ultrafine-dem-drum',
       name: '超细粉体转鼓流动 DEM 模拟与标定',
       role: '独立研究',
       period: '2025 — 2026',
@@ -158,6 +161,7 @@ export const profile: Profile = {
       tech: ['Ansys Rocky DEM', 'Python', 'Polars'],
     },
     {
+      slug: 'rs-hdmr-sensitivity',
       name: '基于 RS-HDMR 的全局敏感性分析框架',
       role: '方法研究',
       period: '2025 — 2026',
@@ -166,6 +170,7 @@ export const profile: Profile = {
       tech: ['Python', 'SALib', 'NumPy'],
     },
     {
+      slug: 'cgp-data-pipeline',
       name: '粗粒化 (CGP) 高通量数据处理流程',
       role: '工具开发',
       period: '2026',
